@@ -57,12 +57,35 @@ bool option_parse(Option* option, int argc, char** argv)
 
   GError* error = NULL;
 
-  char** argv_strv = g_new0(char*, argc + 1);
-  int i = 0;
-  while (i < argc) {
+  int shell_args_idx = argc;
+
+  char** argv_strv = g_new0(char *, argc + 1);
+  for (int i = 0; i < argc; i++) {
     argv_strv[i] = g_strdup(argv[i]);
-    i++;
+
+    // capture the index of -e or --shell plus 1.
+    // shell_args_idx == argc makes sure we only do this once.
+    // For example, given `tym -e less -e`, the second -e is argument to less not tym
+    if (shell_args_idx == argc && (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--shell") == 0)) {
+      shell_args_idx = i + 1;
+    }
   }
+
+  // merge all strings after -e into single string and place it as the next
+  // argument. Hacky workaournd. does not fix everthing. It would be much better
+  // if can store these as an array
+  if (shell_args_idx < argc - 1) {
+    char* joined = g_strjoinv(" ", (argv_strv + shell_args_idx));
+    g_free(argv_strv[shell_args_idx]);
+    argv_strv[shell_args_idx] = joined;
+
+    // free the rest
+    for (int i = shell_args_idx + 1; i < argc; i++) {
+      g_free(argv_strv[i]);
+      argv_strv[i] = NULL;
+    }
+  }
+
   g_option_context_parse_strv(option->option_context, &argv_strv, &error);
   char** a = &argv_strv[0];
   while (*a) {

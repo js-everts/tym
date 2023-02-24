@@ -465,8 +465,14 @@ $ tym --cwd=/home/user/projects
 You can set config value via command line option.
 
 ```console
-$ tym --shell=/bin/zsh --color_background=red --width=40 --ignore_default_keymap
+$ tym --color_background=red --width=40 --ignore_default_keymap --shell=/bin/zsh
 ```
+
+### `-e COMMAND [ARGS] ...`
+
+Must be the last argument passed to tym.
+
+$ tym --width=80 -e less file.txt
 
 ## Development
 
