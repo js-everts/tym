@@ -80,4 +80,6 @@ void context_set_str(Context* context, const char* key, const char* value);
 void context_set_int(Context* context, const char* key, int value);
 void context_set_bool(Context* context, const char* key, bool value);
 
+char** context_get_cmd(Context* context);
+
 #endif

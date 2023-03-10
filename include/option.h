@@ -28,4 +28,6 @@ char* option_get_str(Option* option, const char* key);
 int option_get_int(Option* option, const char* key);
 bool option_get_bool(Option* option, const char* key);
 
+char** option_get_cmd(Option* option);
+
 #endif

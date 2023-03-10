@@ -32,6 +32,9 @@ static KeyPair DEFAULT_KEY_PAIRS[] = {
   {},
 };
 
+char** context_get_cmd(Context* context) {
+  return option_get_cmd(context->option);
+}
 
 char* context_acquire_config_path(Context* context)
 {

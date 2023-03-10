@@ -24,6 +24,17 @@ static char* get_default_shell()
   return g_strdup(TYM_FALL_BACK_SHELL);
 }
 
+static char*** get_default_cmd() {
+  // ok wtf is this?. how do i write this better.
+  char** cmd = g_new0(char*, 2);
+  cmd[0] = get_default_shell();
+
+  char*** c = g_new0(char**, 1);
+  *c = cmd;
+
+  return c;
+}
+
 static void free_entry(void* data)
 {
   g_free(((MetaEntry*)data)->default_value);
@@ -59,11 +70,6 @@ Meta* meta_init()
 
   MetaEntry ee[] = {
     // STR
-    {
-      .name="shell",  .short_name='e', .default_value=get_default_shell(), .arg_desc="<shell>",
-      .desc="Shell to use in the terminal",
-      .setter=CB(setter_shell)
-    },
     {
       .name="term", .default_value=sdup(TYM_DEFAULT_TERM), .arg_desc="", .desc="Value to override $TERM",
       .setter=CB(setter_term)
@@ -336,6 +342,12 @@ GOptionEntry* meta_get_option_entries(Meta* meta)
       .arg_data = new_empty_str(),
       .description = "Set the terminal's working directory. Must be an absolute path.",
       .arg_description = "<path>",
+    }, {
+      .long_name = G_OPTION_REMAINING,
+      .arg = G_OPTION_ARG_STRING_ARRAY,
+      .arg_data = get_default_cmd(),
+      .description = NULL,
+      .arg_description = NULL,
     }
   };
 

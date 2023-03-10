@@ -78,7 +78,11 @@ bool option_parse(Option* option, int argc, char** argv)
 
   GOptionEntry* e = &option->entries[0];
   while (e->long_name) {
-    g_hash_table_insert(option->entries_as_table, (void*)e->long_name, e);
+    if (strcmp(e->long_name, G_OPTION_REMAINING) == 0) {
+      g_hash_table_insert(option->entries_as_table, "command", e);
+    } else {
+      g_hash_table_insert(option->entries_as_table, (void*)e->long_name, e);
+    }
     e++;
   };
 
@@ -114,6 +118,15 @@ int option_get_int(Option* option, const char* key)
 bool option_get_bool(Option* option, const char* key)
 {
   gboolean* p = (gboolean*)option_get_pointer(option, key);
+  if (!p) {
+    return false;
+  }
+  return *p;
+}
+
+char** option_get_cmd(Option* option)
+{
+  char*** p = (char***)option_get_pointer(option, "command");
   if (!p) {
     return false;
   }

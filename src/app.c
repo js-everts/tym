@@ -542,7 +542,6 @@ static void on_vte_spawn(VteTerminal* vte, GPid pid, GError* error, void* user_d
 int on_command_line(GApplication* gapp, GApplicationCommandLine* cli, void* user_data)
 {
   df();
-  GError* error = NULL;
 
   int argc = -1;
   char** argv = g_application_command_line_get_arguments(cli, &argc);
@@ -613,16 +612,7 @@ int on_command_line(GApplication* gapp, GApplicationCommandLine* cli, void* user
     _subscribe_dbus(context);
   }
 
-  const char* shell_line = context_get_str(context, "shell");
-
-  char** shell_argv = NULL;
-  g_shell_parse_argv(shell_line, NULL, &shell_argv, &error);
-  if (error) {
-    g_warning("Parse error: %s", error->message);
-    g_error_free(error);
-    app_quit_context(context);
-    return 0;
-  }
+  char** command = context_get_cmd(context);
 
   const char* const* env = g_application_command_line_get_environ(cli);
   char** shell_env = g_new0(char*, g_strv_length((char**)env) + 1);
@@ -646,7 +636,7 @@ int on_command_line(GApplication* gapp, GApplicationCommandLine* cli, void* user
     vte,                 // terminal
     VTE_PTY_DEFAULT,     // pty flag
     cwd,                 // working directory
-    shell_argv,          // argv
+    command,             // argv
     shell_env,           // envv
     G_SPAWN_SEARCH_PATH, // spawn_flags
     NULL,                // child_setup
@@ -663,7 +653,7 @@ int on_command_line(GApplication* gapp, GApplicationCommandLine* cli, void* user
     vte,
     VTE_PTY_DEFAULT,
     cwd,
-    shell_argv,
+    command,
     shell_env,
     G_SPAWN_SEARCH_PATH,
     NULL,
@@ -675,7 +665,6 @@ int on_command_line(GApplication* gapp, GApplicationCommandLine* cli, void* user
 
   if (error) {
     g_strfreev(shell_env);
-    g_strfreev(shell_argv);
     g_error("%s", error->message);
     g_error_free(error);
     app_quit_context(context);
@@ -684,7 +673,6 @@ int on_command_line(GApplication* gapp, GApplicationCommandLine* cli, void* user
 #endif
 
   g_strfreev(shell_env);
-  g_strfreev(shell_argv);
   gtk_widget_grab_focus(GTK_WIDGET(vte));
   gtk_widget_show_all(GTK_WIDGET(context->layout.window));
   return 0;
